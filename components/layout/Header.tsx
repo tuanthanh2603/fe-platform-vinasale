@@ -113,6 +113,7 @@ export default function Header() {
     { href: "/phi-dich-vu", label: "Phí dịch vụ" },
     { href: "/ho-tro", label: "Hỗ trợ" },
     { href: "/tin-tuc", label: "Tin tức" },
+    { href: "/recruitment", label: "Tuyển dụng" },
     { href: "/ve-vinasale", label: "Về VinaSale" },
   ];
 
@@ -334,7 +335,6 @@ export default function Header() {
           >
             Đăng nhập
           </Link>
-          <p className="text-center text-[11px] text-slate-400">Hotline hỗ trợ khách hàng: 0877 71 75 75</p>
         </div>
       </div>
     </>

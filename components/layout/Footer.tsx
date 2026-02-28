@@ -47,7 +47,7 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-slate-400" />
                 <a href="tel:1900xxxx" className="hover:text-blue-600 transition">
-                  1900 xxxx
+                  Htline: 0877 71 75 75
                 </a>
               </div>
 
@@ -57,13 +57,13 @@ export default function Footer() {
                   href="mailto:support@vinasale.vn"
                   className="hover:text-blue-600 transition"
                 >
-                  support@vinasale.vn
+                  Hỗ trợ: vinasale.platform@gmail.com
                 </a>
               </div>
 
               <div className="flex items-center gap-3">
                 <MapPin size={16} className="text-slate-400" />
-                <span>TP. Hồ Chí Minh, Việt Nam</span>
+                <span>Trụ sở chính: 2555 Quốc lộ 1A, Phường Đông Hưng Thuận, TP.Hồ Chí Minh</span>
               </div>
             </div>
           </div>
@@ -152,12 +152,14 @@ export default function Footer() {
       {/* Bottom */}
       <div className="border-t border-slate-200">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
-          {/* ✅ Bản quyền pháp lý */}
-          <div>
+
+          {/* Bản quyền */}
+          <div className="order-2 md:order-1">
             © {year} Công ty TNHH Công Nghệ VinaSale. All rights reserved.
           </div>
 
-          <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {/* Điều khoản + Chính sách */}
+          <div className="order-1 md:order-2 flex flex-wrap justify-center gap-x-5 gap-y-2">
             <Link className="hover:text-blue-600 transition" href="#">
               Điều khoản sử dụng
             </Link>
@@ -165,6 +167,7 @@ export default function Footer() {
               Chính sách bảo mật
             </Link>
           </div>
+
         </div>
       </div>
     </footer>
