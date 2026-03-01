@@ -110,11 +110,11 @@ export default function Header() {
   const dummyMenu: MenuProps = useMemo(() => ({ items: [{ key: "dummy", label: "" }] }), []);
 
   const navLinks = [
-    { href: "/phi-dich-vu", label: "Phí dịch vụ" },
-    { href: "/ho-tro", label: "Hỗ trợ" },
-    { href: "/tin-tuc", label: "Tin tức" },
+    { href: "/service-fee", label: "Phí dịch vụ" },
+    { href: "/support", label: "Hỗ trợ" },
+    { href: "/new", label: "Tin tức" },
     { href: "/recruitment", label: "Tuyển dụng" },
-    { href: "/ve-vinasale", label: "Về VinaSale" },
+    { href: "/about", label: "Về VinaSale" },
   ];
 
   return (
@@ -204,13 +204,13 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 md:flex">
             <Link
-              href="/dang-nhap"
+              href="/login"
               className="rounded-full border border-slate-300 bg-white/70 px-5 py-2 text-sm font-semibold text-slate-800 backdrop-blur transition hover:border-blue-500 hover:text-blue-600 hover:shadow-sm active:scale-95"
             >
               Đăng nhập
             </Link>
             <Link
-              href="/dang-ky"
+              href="/register"
               className="relative overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <span className="relative z-10">Đăng ký</span>
@@ -322,14 +322,14 @@ export default function Header() {
         {/* Drawer footer — CTA buttons */}
         <div className="border-t border-slate-100 px-4 py-4 space-y-2.5">
           <Link
-            href="/dang-ky"
+            href="/register"
             onClick={() => setMobileOpen(false)}
             className="block w-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 py-3 text-center text-sm font-semibold text-white shadow-lg active:scale-95"
           >
             Đăng ký
           </Link>
           <Link
-            href="/dang-nhap"
+            href="/login"
             onClick={() => setMobileOpen(false)}
             className="block w-full rounded-full border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
           >

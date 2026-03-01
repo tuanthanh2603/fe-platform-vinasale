@@ -143,8 +143,8 @@ export default function Home() {
 
   const pricing = [
     {
-      name: "Starter",
-      price: "Từ 199K/tháng",
+      name: "Cơ bản",
+      price: "Miễn phí",
       desc: "Phù hợp cửa hàng nhỏ, bắt đầu nhanh.",
       items: ["Bán hàng cơ bản", "Sản phẩm & kho", "Báo cáo tổng quan", "Hỗ trợ tiêu chuẩn"],
       cta: "Dùng thử miễn phí",
@@ -152,16 +152,16 @@ export default function Home() {
       highlight: false,
     },
     {
-      name: "Growth",
-      price: "Từ 399K/tháng",
+      name: "Chuyên nghiệp",
+      price: "Từ 99K/tháng",
       desc: "Tối ưu vận hành, đa chi nhánh.",
-      items: ["Đa chi nhánh", "Phân quyền nâng cao", "Báo cáo realtime", "Tích hợp mở rộng"],
+      items: ["Đa chi nhánh", "Phân quyền nâng cao", "Báo cáo theo thời gian thực", "Tích hợp mở rộng"],
       cta: "Bắt đầu ngay",
       href: "/dang-ky",
       highlight: true,
     },
     {
-      name: "Enterprise",
+      name: "Cao cấp",
       price: "Liên hệ",
       desc: "Dành cho hệ thống lớn, tuỳ biến sâu.",
       items: ["SLA & hỗ trợ ưu tiên", "Tích hợp theo yêu cầu", "Bảo mật nâng cao", "Tư vấn triển khai"],

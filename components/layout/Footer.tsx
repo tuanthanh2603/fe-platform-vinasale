@@ -47,7 +47,7 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Phone size={16} className="text-slate-400" />
                 <a href="tel:1900xxxx" className="hover:text-blue-600 transition">
-                  Htline: 0877 71 75 75
+                  Hotline: 0877 71 75 75
                 </a>
               </div>
 

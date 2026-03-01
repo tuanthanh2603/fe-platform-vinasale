@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ConfigProvider } from "antd";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 
 const sfProRounded = localFont({
   variable: "--font-sf-pro-rounded",
@@ -27,9 +25,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
@@ -38,17 +36,12 @@ export default function RootLayout({
         <ConfigProvider
           theme={{
             token: {
-              fontFamily: "var(--font-sf-pro-rounded), Arial, Helvetica, sans-serif",
+              fontFamily:
+                "var(--font-sf-pro-rounded), Arial, Helvetica, sans-serif",
             },
           }}
         >
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
+          {children}
         </ConfigProvider>
       </body>
     </html>
