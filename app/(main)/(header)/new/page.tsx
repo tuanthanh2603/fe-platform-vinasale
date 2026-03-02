@@ -147,6 +147,8 @@ export default function NewPage() {
                     <div className="mt-5 flex flex-wrap gap-3">
                         <Link
                             href="/register"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02]"
                         >
                             Dùng thử miễn phí <ArrowRight size={16} />

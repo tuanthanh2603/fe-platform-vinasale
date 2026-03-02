@@ -205,12 +205,16 @@ export default function Header() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href="/login"
+              target="_blank"
+              rel="noopener noreferrer"
               className="rounded-full border border-slate-300 bg-white/70 px-5 py-2 text-sm font-semibold text-slate-800 backdrop-blur transition hover:border-blue-500 hover:text-blue-600 hover:shadow-sm active:scale-95"
             >
               Đăng nhập
             </Link>
             <Link
               href="/register"
+              target="_blank"
+              rel="noopener noreferrer"
               className="relative overflow-hidden rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <span className="relative z-10">Đăng ký</span>
@@ -323,6 +327,8 @@ export default function Header() {
         <div className="border-t border-slate-100 px-4 py-4 space-y-2.5">
           <Link
             href="/register"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}
             className="block w-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 py-3 text-center text-sm font-semibold text-white shadow-lg active:scale-95"
           >
@@ -330,6 +336,8 @@ export default function Header() {
           </Link>
           <Link
             href="/login"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}
             className="block w-full rounded-full border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-95"
           >

@@ -148,6 +148,8 @@ export default function AboutPage() {
                     <div className="mt-8 flex flex-wrap gap-3">
                         <Link
                             href="/register"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02]"
                         >
                             Bắt đầu với VinaSale <ArrowRight size={16} />

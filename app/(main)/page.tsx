@@ -148,7 +148,7 @@ export default function Home() {
       desc: "Phù hợp cửa hàng nhỏ, bắt đầu nhanh.",
       items: ["Bán hàng cơ bản", "Sản phẩm & kho", "Báo cáo tổng quan", "Hỗ trợ tiêu chuẩn"],
       cta: "Dùng thử miễn phí",
-      href: "/dang-ky",
+      href: "/register",
       highlight: false,
     },
     {
@@ -157,7 +157,7 @@ export default function Home() {
       desc: "Tối ưu vận hành, đa chi nhánh.",
       items: ["Đa chi nhánh", "Phân quyền nâng cao", "Báo cáo theo thời gian thực", "Tích hợp mở rộng"],
       cta: "Bắt đầu ngay",
-      href: "/dang-ky",
+      href: "/register",
       highlight: true,
     },
     {
@@ -246,7 +246,7 @@ export default function Home() {
             {/* Buttons */}
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Link
-                href="/dang-ky"
+                href="/register"
                 className="w-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-blue-500/30 transition active:scale-95 hover:scale-105 hover:shadow-xl sm:w-auto sm:px-8 sm:text-lg text-center"
               >
                 🚀 Dùng thử miễn phí
@@ -483,7 +483,9 @@ export default function Home() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <Link
-                  href="/dang-ky"
+                  href="/register"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="rounded-full bg-white px-7 py-3 text-center text-sm font-semibold text-slate-900 shadow-lg transition hover:scale-[1.02]"
                 >
                   Dùng thử miễn phí

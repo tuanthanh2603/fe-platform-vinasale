@@ -114,6 +114,8 @@ export default function ServiceFeePage() {
 
                 <Link
                   href="/register"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="mt-6 inline-flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
                 >
                   Đăng ký gói này <ArrowRight size={15} />
