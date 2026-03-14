@@ -2,6 +2,7 @@ import Image from "next/image";
 import AuthSwitcher from "./AuthSwitcher";
 import BGLogin from "@/assets/images/bg2.png";
 import BrandImage from "@/assets/images/brand.png";
+import ToastProvider from "@/components/providers/ToastProvider";
 
 export default function AuthLayout({
   children,

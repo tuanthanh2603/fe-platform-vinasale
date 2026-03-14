@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { API_GetProvinces } from "@/lib/services/location.service";
-import { Province } from "@/types/province";
+import { API_GetProvinces } from "@/lib/services/common/location/province.service";
+import { ProvinceName } from "@/types/common/location/province.interface";
 
 export function useProvinces() {
-  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [provinces, setProvinces] = useState<ProvinceName[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

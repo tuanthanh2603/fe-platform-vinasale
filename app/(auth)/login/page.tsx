@@ -1,22 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { Form, Input, Button } from "antd";
+import { Form, Input, Button, message } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
-
-type LoginValues = {
-  email: string;
-  password: string;
-};
+import { DTO_RQ_Login } from "@/types/common/auth/login.interface";
+import { authService } from "@/lib/services/common/auth/auth.service";
+import { toastError } from "@/lib/utils/toast";
 
 export default function LoginPage() {
-  const onFinish = (values: LoginValues) => {
-    console.log("login:", values);
+  const onFinish = async (values: DTO_RQ_Login) => {
+    try {
+      const res = await authService.API_Login(values);
+
+      if (res.success) {
+        message.success("Đăng nhập thành công");
+
+
+      } else {
+        toastError("Đăng nhập thất bại. Vui lòng thử lại.");
+      }
+    } catch (error: any) {
+      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+    }
   };
+  
 
   return (
     <div className="space-y-4">
-      <Form<LoginValues>
+      <Form<DTO_RQ_Login>
         layout="vertical"
         requiredMark={false}
         onFinish={onFinish}
@@ -63,7 +74,7 @@ export default function LoginPage() {
         <Button
           htmlType="submit"
           size="large"
-          className="mt-2 w-full !bg-gray-900 !text-white hover:!bg-gray-800"
+          className="mt-2 w-full bg-gray-900! text-white! hover:bg-gray-800!"
         >
           Đăng nhập
         </Button>
