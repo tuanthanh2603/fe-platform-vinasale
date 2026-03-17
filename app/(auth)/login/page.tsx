@@ -5,7 +5,7 @@ import { Form, Input, Button, message } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { DTO_RQ_Login } from "@/types/common/auth/login.interface";
 import { authService } from "@/lib/services/common/auth/auth.service";
-import { toastError } from "@/lib/utils/toast";
+import { toastError, toastSuccess } from "@/lib/utils/toast";
 
 export default function LoginPage() {
   const onFinish = async (values: DTO_RQ_Login) => {
@@ -13,7 +13,7 @@ export default function LoginPage() {
       const res = await authService.API_Login(values);
 
       if (res.success) {
-        message.success("Đăng nhập thành công");
+        toastSuccess("Đăng nhập thành công.")
 
 
       } else {
@@ -44,7 +44,7 @@ export default function LoginPage() {
           <Input
             size="large"
             prefix={<MailOutlined className="text-gray-400" />}
-            placeholder="you@example.com"
+            placeholder="Nhập email của bạn"
           />
         </Form.Item>
 

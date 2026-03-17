@@ -1,14 +1,19 @@
-export interface DTO_RQ_CreateStore {
+/* ═══════════════════════════════════════════
+ * Store DTOs — field names khớp 1:1 với Backend
+ * ═══════════════════════════════════════════ */
+
+// ─── Request ───
+
+export interface CreateStoreRequest {
 	owner: string;
-	store_name: string;
-	province_id: string;
-	business_sector: string;
-}
-
-export interface DTO_RP_CreateStore {
-	publicId: string;
 	storeName: string;
-}
-
-export type DTO_RP_DeleteStore = null;
-
+	businessSector: string;
+  }
+  
+  // ─── Response ───
+  
+  // BE: CreateStoreResponse.java → { storeId, storeName }
+  export interface CreateStoreResponse {
+	storeId: string;
+	storeName: string;
+  }

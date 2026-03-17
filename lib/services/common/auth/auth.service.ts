@@ -1,15 +1,29 @@
 import { apiPost } from "@/lib/api-client";
-import { DTO_RP_Login, DTO_RQ_Login } from "@/types/common/auth/login.interface";
-import { DTO_RQ_RegisterStep2Form } from "@/types/common/auth/register.interface";
+import {
+  RegisterEmailRequest,
+  RegisterEmailResponse,
+  VerifyOtpRequest,
+  VerifyOtpResponse,
+  ResendOtpRequest,
+  ResendOtpResponse,
+  LoginRequest,
+  LoginResponse,
+} from "@/types/common/auth/auth.interface";
 
 export const authService = {
-	API_RegisterEmail(data: DTO_RQ_RegisterStep2Form) {
-		return apiPost<any>("/auth/register-email", data);
-	},
-	API_VerifyOtp(data: { email: string; otp: string, id: string }) {
-		return apiPost<any>("/auth/verify-otp", data);
-	},
-	API_Login(data: DTO_RQ_Login) {
-		return apiPost<DTO_RP_Login>("/auth/login", data);
-	}
+  registerEmail(data: RegisterEmailRequest) {
+    return apiPost<RegisterEmailResponse>("/auth/register-email", data);
+  },
+
+  verifyOtp(data: VerifyOtpRequest) {
+    return apiPost<VerifyOtpResponse>("/auth/verify-otp", data);
+  },
+
+  resendOtp(data: ResendOtpRequest) {
+    return apiPost<ResendOtpResponse>("/auth/resend-otp", data);
+  },
+
+  login(data: LoginRequest) {
+    return apiPost<LoginResponse>("/auth/login", data);
+  },
 };

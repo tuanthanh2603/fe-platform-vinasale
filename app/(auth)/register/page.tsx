@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Form, Input, Button, Select, notification } from "antd";
+import { Form, Input, Button, Select } from "antd";
 import {
   UserOutlined,
   ShopOutlined,
@@ -11,184 +11,184 @@ import {
   LockOutlined,
 } from "@ant-design/icons";
 
-import {
-  DTO_RQ_RegisterStep1Form,
-  DTO_RQ_RegisterStep2Form,
-} from "@/types/common/auth/register.interface";
+import type { CreateStoreRequest } from "@/types/common/store/store.interface";
 
 import { REGISTER_BUSINESS_SECTOR_OPTIONS } from "@/constants/common/auth/register.constant";
 
 import { storeService } from "@/lib/services/common/store/store.service";
-import { API_GetProvinces } from "@/lib/services/common/location/province.service";
-import { DTO_RQ_CreateStore } from "@/types/common/store/store.interface";
-import { ProvinceName } from "@/types/common/location/province.interface";
 import { authService } from "@/lib/services/common/auth/auth.service";
 import { toastError, toastSuccess, toastWarning } from "@/lib/utils/toast";
+import { RegisterStep1Form, RegisterStep2Form } from "@/types/common/auth/auth.interface";
 
 export default function RegisterPage() {
   const router = useRouter();
 
-  const [api, contextHolder] = notification.useNotification();
-
+  /* ─── State ─── */
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState("");
   const [accountId, setAccountId] = useState<string | null>(null);
-  const [storeName, setStoreName] = useState<string>("");
-
-  const [provinces, setProvinces] = useState<ProvinceName[]>([]);
-  const [provincesLoading, setProvincesLoading] = useState(false);
+  const [email, setEmail] = useState("");
 
   const [createStoreLoading, setCreateStoreLoading] = useState(false);
-  const [createAccountLoading, setCreateAccountLoading] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  const [email, setEmail] = useState<string>("");
-
-  /* ================= REF FOR CLEANUP ================= */
-
-  const stepRef = useRef(step);
+  /* ─── Cleanup refs ─── */
   const storeIdRef = useRef(storeId);
   const registerCompletedRef = useRef(false);
 
   useEffect(() => {
-    stepRef.current = step;
     storeIdRef.current = storeId;
-  }, [step, storeId]);
+  }, [storeId]);
 
   useEffect(() => {
     return () => {
       if (!registerCompletedRef.current && storeIdRef.current) {
-        storeService.deleteStore(storeIdRef.current);
+        storeService.deleteStore(storeIdRef.current).catch((err) => {
+          console.error("Cleanup deleteStore failed:", err);
+        });
       }
     };
   }, []);
 
-  /* ================= FETCH PROVINCES ================= */
-
+  /* ─── Resend cooldown timer ─── */
   useEffect(() => {
-    const fetchProvinces = async () => {
-      try {
-        setProvincesLoading(true);
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((p) => p - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
-        const res = await API_GetProvinces();
+  /* ═══════════════════ STEP 1: TẠO CỬA HÀNG ═══════════════════ */
 
-        if (res.success) {
-          setProvinces(res.data);
-        } else {
-          toastWarning("Không tải được danh sách tỉnh/thành.");
-        }
-      } catch (error) {
-        toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
-      } finally {
-        setProvincesLoading(false);
-      }
-    };
-
-    fetchProvinces();
-  }, []);
-
-  const provinceOptions = provinces.map((province) => ({
-    value: String(province.code),
-    label: province.name,
-  }));
-
-  /* ================= STEP 1 ================= */
-
-  const handleStep1Submit = async (values: DTO_RQ_RegisterStep1Form) => {
+  const handleCreateStore = async (values: RegisterStep1Form) => {
     try {
       setCreateStoreLoading(true);
 
-      const requestData: DTO_RQ_CreateStore = {
+      const request: CreateStoreRequest = {
         owner: values.owner,
-        store_name: values.storeName,
-        province_id: values.provinceCode,
-        business_sector: values.businessSector,
+        storeName: values.storeName,
+        businessSector: values.businessSector,
       };
 
-      const res = await storeService.createStore(requestData);
+      const res = await storeService.createStore(request);
 
       if (res.success) {
         toastSuccess("Tạo cửa hàng thành công.");
-
-        setStoreId(res.data.publicId);
-        setStoreName(res.data.storeName);
+        setStoreId(res.data.storeId);     // BE trả: storeId
+        setStoreName(res.data.storeName);  // BE trả: storeName
         setStep(2);
-      } else if (res.code == 409) {
-        toastWarning("Cửa hàng đã tồn tại trong hệ thống.");
+      } else if (res.code === 409) {
+        toastWarning("Tên cửa hàng của bạn đã tồn tại trên hệ thống.");
       } else {
         toastWarning("Tạo cửa hàng thất bại.");
       }
     } catch (error) {
+      console.error("handleCreateStore:", error);
       toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setCreateStoreLoading(false);
     }
   };
 
-  /* ================= STEP 2 ================= */
+  /* ═══════════════════ STEP 2: ĐĂNG KÝ EMAIL ═══════════════════ */
 
-  const handleStep2Submit = async (values: DTO_RQ_RegisterStep2Form) => {
+  const handleRegisterEmail = async (values: RegisterStep2Form) => {
     if (!storeId) {
       toastError("Cửa hàng không tồn tại.");
       return;
     }
 
     try {
-      setCreateAccountLoading(true);
+      setRegisterLoading(true);
 
-      const res = await authService.API_RegisterEmail({
+      const res = await authService.registerEmail({
         email: values.email,
         password: values.password,
         storeId,
       });
 
       if (res.success) {
-        toastSuccess("OTP đã được gửi tới email");
-
-        setEmail(res.data.email);
-        setAccountId(res.data.account_id);
+        toastSuccess("OTP đã được gửi tới email.");
+        setAccountId(res.data.accountId);  // BE trả: accountId
+        setEmail(res.data.email);          // BE trả: email
+        setResendCooldown(60);
         setStep(3);
+      } else if (res.code === 409) {
+        toastWarning("Email đã được liên kết với cửa hàng này.");
       } else {
-        toastError("Tạo tài khoản thất bại.");
+        toastError("Đăng ký thất bại.");
       }
     } catch (error) {
+      console.error("handleRegisterEmail:", error);
       toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
-      setCreateAccountLoading(false);
+      setRegisterLoading(false);
     }
   };
 
-  /* ================= STEP 3 ================= */
+  /* ═══════════════════ STEP 3: XÁC THỰC OTP ═══════════════════ */
 
   const handleVerifyOtp = async (values: { otp: string }) => {
-    try {
-      setOtpLoading(true);
+    if (!accountId || !storeId) {
+      toastError("Thiếu thông tin xác thực.");
+      return;
+    }
 
-      const res = await authService.API_VerifyOtp({
+    try {
+      setVerifyLoading(true);
+
+      const res = await authService.verifyOtp({
         email,
         otp: values.otp,
-        id: accountId as string,
+        accountId,
+        storeId,
       });
 
       if (res.success) {
-        toastSuccess(
-          "Đăng ký thành công. Bạn có thể đăng nhập ngay bây giờ."
-        );
-
+        registerCompletedRef.current = true;
+        toastSuccess("Đăng ký thành công. Bạn có thể đăng nhập ngay.");
         router.push("/login");
+      } else if (res.code === 422) {
+        toastWarning(res.message || "OTP không đúng hoặc đã hết hạn.");
       } else {
-        toastWarning(
-          "OTP không đúng. Vui lòng kiểm tra lại email và thử lại."
-        );
+        toastWarning("Xác thực thất bại.");
       }
     } catch (error) {
+      console.error("handleVerifyOtp:", error);
       toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
-      setOtpLoading(false);
+      setVerifyLoading(false);
     }
   };
 
-  /* ================= BACK TO STEP 1 ================= */
+  /* ═══════════════════ GỬI LẠI OTP ═══════════════════ */
+
+  const handleResendOtp = async () => {
+    if (!email || !accountId) return;
+
+    try {
+      setResendLoading(true);
+
+      const res = await authService.resendOtp({ email, accountId });
+
+      if (res.success) {
+        toastSuccess("OTP mới đã được gửi tới email.");
+        setResendCooldown(60);
+      } else {
+        toastWarning("Gửi lại OTP thất bại.");
+      }
+    } catch (error) {
+      console.error("handleResendOtp:", error);
+      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  /* ═══════════════════ QUAY LẠI ═══════════════════ */
 
   const goToStep1 = async () => {
     if (!storeId) {
@@ -202,197 +202,219 @@ export default function RegisterPage() {
       const res = await storeService.deleteStore(storeId);
 
       if (res.success) {
-        toastSuccess("Cửa hàng tạm thời đã bị xóa.");
-
         setStoreId(null);
         setStoreName("");
         setAccountId(null);
+        setEmail("");
         setStep(1);
       } else {
         toastWarning("Không thể quay lại. Vui lòng thử lại.");
       }
     } catch (error) {
+      console.error("goToStep1:", error);
       toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setCreateStoreLoading(false);
     }
   };
 
+  const goToStep2 = () => setStep(2);
+
+  /* ═══════════════════ RENDER ═══════════════════ */
+
   return (
-    <>
-      {contextHolder}
-
-      <div className="space-y-4">
-        {/* STEP 1 */}
-        {step === 1 && (
-          <>
-            <Form<DTO_RQ_RegisterStep1Form>
-              layout="vertical"
-              requiredMark={false}
-              onFinish={handleStep1Submit}
-              className="space-y-2"
+    <div className="space-y-4">
+      {/* STEP 1 */}
+      {step === 1 && (
+        <>
+          <Form<RegisterStep1Form>
+            layout="vertical"
+            requiredMark={false}
+            onFinish={handleCreateStore}
+            className="space-y-2"
+          >
+            <Form.Item
+              label="Họ và tên"
+              name="owner"
+              rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
             >
-              <Form.Item
-                label="Họ và tên"
-                name="owner"
-                rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-              >
-                <Input
-                  size="large"
-                  prefix={<UserOutlined />}
-                  placeholder="Nhập họ tên của bạn"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Tên cửa hàng"
-                name="storeName"
-                rules={[
-                  { required: true, message: "Vui lòng nhập tên cửa hàng" },
-                ]}
-              >
-                <Input
-                  size="large"
-                  prefix={<ShopOutlined />}
-                  placeholder="Nhập tên cửa hàng"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Khu vực"
-                name="provinceCode"
-                rules={[
-                  { required: true, message: "Vui lòng chọn tỉnh/thành" },
-                ]}
-              >
-                <Select
-                  size="large"
-                  placeholder="Chọn khu vực"
-                  loading={provincesLoading}
-                  options={provinceOptions}
-                  showSearch
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Ngành kinh doanh"
-                name="businessSector"
-                rules={[
-                  { required: true, message: "Vui lòng chọn ngành kinh doanh" },
-                ]}
-              >
-                <Select
-                  size="large"
-                  placeholder="Chọn ngành kinh doanh"
-                  options={REGISTER_BUSINESS_SECTOR_OPTIONS}
-                />
-              </Form.Item>
-
-              <Button
-                htmlType="submit"
+              <Input
                 size="large"
-                loading={createStoreLoading}
-                className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
-              >
-                Tạo cửa hàng
-              </Button>
-            </Form>
+                prefix={<UserOutlined />}
+                placeholder="Nhập họ tên của bạn"
+              />
+            </Form.Item>
 
-            <p className="text-sm text-gray-600">
-              Đã có tài khoản?{" "}
-              <Link href="/login" className="font-medium text-gray-900 underline">
-                Đăng nhập
-              </Link>
-            </p>
-          </>
-        )}
-
-        {/* STEP 2 */}
-        {step === 2 && (
-          <>
-            <h2 className="text-lg font-semibold">{storeName}</h2>
-
-            <Form
-              layout="vertical"
-              requiredMark={false}
-              onFinish={handleStep2Submit}
+            <Form.Item
+              label="Tên cửa hàng"
+              name="storeName"
+              rules={[{ required: true, message: "Vui lòng nhập tên cửa hàng" }]}
             >
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  { required: true, message: "Vui lòng nhập email" },
-                  { type: "email", message: "Vui lòng nhập email hợp lệ" },
-                ]}
-              >
-                <Input
-                  size="large"
-                  prefix={<MailOutlined />}
-                  placeholder="Nhập địa chỉ email"
-                />
-              </Form.Item>
-
-              <Form.Item
-                label="Mật khẩu"
-                name="password"
-                rules={[
-                  { required: true, message: "Vui lòng nhập mật khẩu" },
-                  { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
-                ]}
-              >
-                <Input.Password
-                  size="large"
-                  prefix={<LockOutlined />}
-                  placeholder="Nhập mật khẩu"
-                />
-              </Form.Item>
-
-              <Button
-                htmlType="submit"
+              <Input
                 size="large"
-                loading={createAccountLoading}
-                className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
-              >
-                Đăng ký
-              </Button>
-            </Form>
+                prefix={<ShopOutlined />}
+                placeholder="Nhập tên cửa hàng"
+              />
+            </Form.Item>
 
-            <Button type="link" onClick={goToStep1}>
-              Quay lại bước 1
+            <Form.Item
+              label="Ngành kinh doanh"
+              name="businessSector"
+              rules={[{ required: true, message: "Vui lòng chọn ngành kinh doanh" }]}
+            >
+              <Select
+                size="large"
+                placeholder="Chọn ngành kinh doanh"
+                options={REGISTER_BUSINESS_SECTOR_OPTIONS}
+              />
+            </Form.Item>
+
+            <Button
+              htmlType="submit"
+              size="large"
+              loading={createStoreLoading}
+              className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
+            >
+              Tạo cửa hàng
             </Button>
-          </>
-        )}
+          </Form>
 
-        {/* STEP 3 */}
-        {step === 3 && (
-          <>
-            <h2 className="text-lg font-semibold">Xác thực email</h2>
+          <p className="text-sm text-gray-600">
+            Đã có tài khoản?{" "}
+            <Link href="/login" className="font-medium text-gray-900 underline">
+              Đăng nhập
+            </Link>
+          </p>
+        </>
+      )}
 
-            <p className="text-sm text-gray-500">
-              Mã OTP đã gửi tới <b>{email}</b>
-            </p>
+      {/* STEP 2 */}
+      {step === 2 && (
+        <>
+          <h2 className="text-lg font-semibold">{storeName}</h2>
 
-            <Form onFinish={handleVerifyOtp} layout="vertical">
-              <Form.Item
-                label="OTP"
-                name="otp"
-                rules={[{ required: true }, { len: 6 }]}
-              >
-                <Input.OTP length={6} size="large" />
-              </Form.Item>
-
-              <Button
-                htmlType="submit"
+          <Form<RegisterStep2Form>
+            layout="vertical"
+            requiredMark={false}
+            onFinish={handleRegisterEmail}
+          >
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: "Vui lòng nhập email" },
+                { type: "email", message: "Vui lòng nhập email hợp lệ" },
+              ]}
+            >
+              <Input
                 size="large"
-                loading={otpLoading}
-                className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
-              >
-                Xác nhận OTP
-              </Button>
-            </Form>
-          </>
-        )}
-      </div>
-    </>
+                prefix={<MailOutlined />}
+                placeholder="Nhập địa chỉ email"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Mật khẩu"
+              name="password"
+              rules={[
+                { required: true, message: "Vui lòng nhập mật khẩu" },
+                { min: 6, message: "Mật khẩu phải có ít nhất 6 ký tự" },
+              ]}
+            >
+              <Input.Password
+                size="large"
+                prefix={<LockOutlined />}
+                placeholder="Nhập mật khẩu"
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Xác nhận mật khẩu"
+              name="confirmPassword"
+              dependencies={["password"]}
+              rules={[
+                { required: true, message: "Vui lòng xác nhận mật khẩu" },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue("password") === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error("Mật khẩu xác nhận không khớp"));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password
+                size="large"
+                prefix={<LockOutlined />}
+                placeholder="Nhập lại mật khẩu"
+              />
+            </Form.Item>
+
+            <Button
+              htmlType="submit"
+              size="large"
+              loading={registerLoading}
+              className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
+            >
+              Đăng ký
+            </Button>
+          </Form>
+
+          <Button type="link" onClick={goToStep1} loading={createStoreLoading}>
+            ← Quay lại bước 1
+          </Button>
+        </>
+      )}
+
+      {/* STEP 3 */}
+      {step === 3 && (
+        <>
+          <h2 className="text-lg font-semibold">Xác thực email</h2>
+
+          <p className="text-sm text-gray-500">
+            Mã OTP đã gửi tới <b>{email}</b>
+          </p>
+
+          <Form onFinish={handleVerifyOtp} layout="vertical">
+            <Form.Item
+              label="OTP"
+              name="otp"
+              rules={[
+                { required: true, message: "Vui lòng nhập mã OTP" },
+                { len: 6, message: "Mã OTP gồm 6 ký tự" },
+              ]}
+            >
+              <Input.OTP length={6} size="large" />
+            </Form.Item>
+
+            <Button
+              htmlType="submit"
+              size="large"
+              loading={verifyLoading}
+              className="w-full !bg-gray-900 !text-white hover:!bg-gray-800"
+            >
+              Xác nhận OTP
+            </Button>
+          </Form>
+
+          <div className="flex items-center justify-between">
+            <Button type="link" onClick={goToStep2} className="!px-0">
+              ← Quay lại
+            </Button>
+
+            <Button
+              type="link"
+              onClick={handleResendOtp}
+              loading={resendLoading}
+              disabled={resendCooldown > 0}
+              className="!px-0"
+            >
+              {resendCooldown > 0 ? `Gửi lại OTP (${resendCooldown}s)` : "Gửi lại OTP"}
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
