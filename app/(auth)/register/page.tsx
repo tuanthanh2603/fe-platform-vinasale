@@ -9,11 +9,12 @@ import {
   ShopOutlined,
   MailOutlined,
   LockOutlined,
+  LinkOutlined
 } from "@ant-design/icons";
 
 import type { CreateStoreRequest } from "@/types/common/store/store.interface";
 
-import { REGISTER_BUSINESS_SECTOR_OPTIONS } from "@/constants/common/auth/register.constant";
+import { BUSINESS_SECTOR_OPTIONS } from "@/constants/common/auth/register.constant";
 
 import { storeService } from "@/lib/services/common/store/store.service";
 import { authService } from "@/lib/services/common/auth/auth.service";
@@ -71,6 +72,7 @@ export default function RegisterPage() {
         owner: values.owner,
         storeName: values.storeName,
         businessSector: values.businessSector,
+        storeNameSystem: values.storeNameSystem,
       };
 
       const res = await storeService.createStore(request);
@@ -117,7 +119,7 @@ export default function RegisterPage() {
         setResendCooldown(60);
         setStep(3);
       } else if (res.code === 409) {
-        toastWarning("Email đã được liên kết với cửa hàng này.");
+        toastWarning(res.message || "Dữ liệu đã tồn tại.");
       } else {
         toastError("Đăng ký thất bại.");
       }
@@ -258,6 +260,18 @@ export default function RegisterPage() {
             </Form.Item>
 
             <Form.Item
+              label="Tên cửa hàng trên hệ thống"
+              name="storeNameSystem"
+              rules={[{ required: true, message: "Vui lòng nhập tên cửa hàng trên hệ thống" }]}
+            >
+              <Input
+                size="large"
+                prefix={<LinkOutlined />}
+                placeholder="Nhập tên cửa hàng tham gia hệ thống"
+              />
+            </Form.Item>
+
+            <Form.Item
               label="Ngành kinh doanh"
               name="businessSector"
               rules={[{ required: true, message: "Vui lòng chọn ngành kinh doanh" }]}
@@ -265,7 +279,7 @@ export default function RegisterPage() {
               <Select
                 size="large"
                 placeholder="Chọn ngành kinh doanh"
-                options={REGISTER_BUSINESS_SECTOR_OPTIONS}
+                options={BUSINESS_SECTOR_OPTIONS}
               />
             </Form.Item>
 

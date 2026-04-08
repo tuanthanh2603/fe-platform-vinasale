@@ -8,6 +8,7 @@ import {
   ResendOtpResponse,
   LoginRequest,
   LoginResponse,
+  LogoutRequest,
 } from "@/types/common/auth/auth.interface";
 
 export const authService = {
@@ -26,4 +27,9 @@ export const authService = {
   login(data: LoginRequest) {
     return apiPost<LoginResponse>("/auth/login", data);
   },
+
+  logoutAPI(data: string) {
+    return apiPost("/auth/logout", { accountId: data });
+  }
+  
 };

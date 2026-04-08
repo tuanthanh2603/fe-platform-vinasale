@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { ConfigProvider } from "antd";
 import "./globals.css";
 import ToastProvider from "@/components/providers/ToastProvider";
+import { AuthProvider } from "@/context/AuthContext";
 
 const sfProRounded = localFont({
   variable: "--font-sf-pro-rounded",
@@ -42,7 +43,9 @@ export default function RootLayout({
             },
           }}
         >
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
           <ToastProvider />
         </ConfigProvider>
       </body>

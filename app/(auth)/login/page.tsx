@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import Link from "next/link";
@@ -6,21 +7,37 @@ import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { DTO_RQ_Login } from "@/types/common/auth/login.interface";
 import { authService } from "@/lib/services/common/auth/auth.service";
 import { toastError, toastSuccess } from "@/lib/utils/toast";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { isAuthenticated, login } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) router.replace("/store");
+  }, [isAuthenticated, router]);
+
   const onFinish = async (values: DTO_RQ_Login) => {
     try {
-      const res = await authService.API_Login(values);
-
+      const res = await authService.login(values);
+  
       if (res.success) {
-        toastSuccess("Đăng nhập thành công.")
-
-
+        login({
+          accountId: res.data.accountId,
+          email: res.data.email,
+          accessToken: res.data.accessToken,
+          refreshToken: res.data.refreshToken,
+        });
+  
+        toastSuccess("Đăng nhập thành công.");
+        router.push("/store");
       } else {
-        toastError("Đăng nhập thất bại. Vui lòng thử lại.");
+        toastError(res.message || "Đăng nhập thất bại.");
       }
-    } catch (error: any) {
-      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+    } catch (error: unknown) {
+      toastError("Lỗi hệ thống.");
     }
   };
   

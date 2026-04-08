@@ -8,6 +8,7 @@ export interface CreateStoreRequest {
 	owner: string;
 	storeName: string;
 	businessSector: string;
+  storeNameSystem: string;
   }
   
   // ─── Response ───
