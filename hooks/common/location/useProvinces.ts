@@ -18,7 +18,7 @@ export function useProvinces() {
         const result = await API_GetProvinces();
 
         if (isMounted) {
-          setProvinces(result);
+          setProvinces(result.data);
           setError(null);
         }
       } catch (fetchError) {
