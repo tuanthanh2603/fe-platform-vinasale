@@ -8,7 +8,7 @@ import { getSectorConfig, getSectorRoute } from "@/constants/business-sector";
 import LoadingScreen from "@/components/loading/LoadingScreen";
 
 interface StoreItem {
-  id: string;
+  publicId: string;
   name: string;
   role: string;
   level: string;
@@ -141,8 +141,8 @@ export default function StorePage() {
             const { Icon } = sector;
             return (
               <a
-                key={store.id ?? `store-${index}`}
-                href={`/store/${store.id}/${getSectorRoute(store.businessSector)}`}
+                key={store.publicId ?? `store-${index}`}
+                href={`/CuaHang/${store.publicId}/${store.businessSector}`}
                 className="group bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
               >
                 {/* Top */}

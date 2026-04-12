@@ -10,9 +10,9 @@ import {
 import Link from "next/link";
 
 const stats = [
-    { label: "Khách hàng doanh nghiệp", value: "3.500+" },
-    { label: "Ngành hàng đang phục vụ", value: "25+" },
-    { label: "Tỷ lệ hài lòng hỗ trợ", value: "98%" },
+    { label: "Khách hàng đang đồng hành", value: "120+" },
+    { label: "Ngành hàng đang phục vụ", value: "8+" },
+    { label: "Tỷ lệ hài lòng hỗ trợ", value: "96%" },
     { label: "Thời gian phản hồi", value: "< 15 phút" },
 ];
 
@@ -41,24 +41,24 @@ const values = [
 
 const milestones = [
     {
-        year: "2021",
+        year: "2025",
         title: "Khởi tạo nền tảng",
-        desc: "Bắt đầu từ bài toán quản lý bán hàng đa chi nhánh cho SME.",
+        desc: "VinaSale bắt đầu hoạt động với định hướng xây dựng nền tảng quản lý cho doanh nghiệp vừa và nhỏ.",
     },
     {
-        year: "2022",
-        title: "Mở rộng đa ngành",
-        desc: "Bổ sung các gói giải pháp cho bán lẻ, F&B và dịch vụ.",
-    },
-    {
-        year: "2024",
-        title: "Nâng cấp vận hành realtime",
-        desc: "Tăng tốc báo cáo tức thời, cảnh báo vận hành và phân tích chuyên sâu.",
+        year: "2025",
+        title: "Ra mắt phiên bản đầu tiên",
+        desc: "Phát hành phiên bản sản phẩm đầu tiên, tập trung giải quyết các nhu cầu vận hành cốt lõi.",
     },
     {
         year: "2026",
-        title: "Đồng hành tăng trưởng",
-        desc: "Tập trung tối ưu trải nghiệm và khả năng mở rộng cho doanh nghiệp Việt.",
+        title: "Mở rộng nhóm khách hàng sớm",
+        desc: "Đồng hành cùng các khách hàng đầu tiên và liên tục cải tiến sản phẩm theo phản hồi thực tế.",
+    },
+    {
+        year: "2026",
+        title: "Tăng tốc giai đoạn startup",
+        desc: "Tiếp tục hoàn thiện sản phẩm, mở rộng năng lực đội ngũ và chuẩn bị cho giai đoạn tăng trưởng kế tiếp.",
     },
 ];
 
@@ -79,11 +79,12 @@ export default function AboutPage() {
                         Về VinaSale
                     </div>
                     <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-                        Nền tảng đồng hành cùng doanh nghiệp trong vận hành và tăng trưởng.
+                        Startup công nghệ đồng hành cùng doanh nghiệp trong vận hành và tăng trưởng.
                     </h1>
                     <p className="mt-4 text-base leading-7 text-slate-600 md:text-lg">
-                        VinaSale xây dựng giải pháp quản lý bán hàng đa kênh giúp doanh nghiệp chuẩn hoá vận hành,
-                        kiểm soát dữ liệu tập trung và ra quyết định nhanh hơn bằng báo cáo realtime.
+                        VinaSale chính thức hoạt động từ năm 2025 và hiện đang trong giai đoạn startup. Chúng tôi
+                        xây dựng giải pháp quản lý bán hàng đa kênh giúp doanh nghiệp chuẩn hoá vận hành, kiểm soát
+                        dữ liệu tập trung và ra quyết định nhanh hơn bằng báo cáo realtime.
                     </p>
                 </div>
 
@@ -150,7 +151,7 @@ export default function AboutPage() {
                             href="/register"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02]"
+                            className="inline-flex items-center gap-2 rounded-full bg-linear-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition hover:scale-[1.02]"
                         >
                             Bắt đầu với VinaSale <ArrowRight size={16} />
                         </Link>

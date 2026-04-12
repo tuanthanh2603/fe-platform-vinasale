@@ -5,16 +5,22 @@
 // ─── Request ───
 
 export interface CreateStoreRequest {
-	owner: string;
-	storeName: string;
-	businessSector: string;
+  owner: string;
+  storeName: string;
+  businessSector: string;
   storeNameSystem: string;
-  }
-  
-  // ─── Response ───
-  
-  // BE: CreateStoreResponse.java → { storeId, storeName }
-  export interface CreateStoreResponse {
-	storeId: string;
-	storeName: string;
-  }
+}
+
+// ─── Response ───
+
+// BE: CreateStoreResponse.java → { storeId, storeName }
+export interface CreateStoreResponse {
+  storeId: string;
+  storeName: string;
+}
+
+export interface StoreData {
+  id: string;
+  name: string;
+  businessSector: string
+}

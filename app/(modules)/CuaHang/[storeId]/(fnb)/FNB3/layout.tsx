@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiGet } from "@/lib/api-client";
+import { apiGet, ApiResponse } from "@/lib/api-client";
 import { useAuth } from "@/context/AuthContext";
 import {
   ArrowLeft, LogOut, Menu, X, Coffee,
@@ -11,10 +11,11 @@ import {
   Users, UserCheck, Wallet, BarChart2,
   ChevronRight,
 } from "lucide-react";
+import { storeService } from "@/lib/services/common/store/store.service";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-interface StoreInfo { id: string; name: string; businessSector: string }
+
 
 interface SubItem { label: string; href: string }
 
@@ -40,10 +41,10 @@ function buildNav(base: string): NavGroup[] {
       label: "Bán hàng",
       Icon: ShoppingCart,
       items: [
-        { label: "POS bán hàng (sơ đồ bàn)",      href: `${base}/sales/pos` },
-        { label: "Danh sách hóa đơn",              href: `${base}/sales/invoices` },
-        { label: "Đơn hàng online / delivery",     href: `${base}/sales/delivery` },
-        { label: "Trả hàng / hủy đơn",             href: `${base}/sales/returns` },
+        { label: "POS bán hàng (sơ đồ bàn)", href: `${base}/sales/pos` },
+        { label: "Danh sách hóa đơn", href: `${base}/sales/invoices` },
+        { label: "Đơn hàng online / delivery", href: `${base}/sales/delivery` },
+        { label: "Trả hàng / hủy đơn", href: `${base}/sales/returns` },
       ],
     },
     {
@@ -52,10 +53,10 @@ function buildNav(base: string): NavGroup[] {
       Icon: Package,
       items: [
         { label: "Danh mục menu (món, topping, combo)", href: `${base}/products/menu` },
-        { label: "Nguyên liệu & định lượng",            href: `${base}/products/ingredients` },
-        { label: "Nhập / Xuất / Kiểm kho",              href: `${base}/products/inventory` },
-        { label: "Nhà cung cấp",                        href: `${base}/products/suppliers` },
-        { label: "Quản lý lô / hạn sử dụng",           href: `${base}/products/batches` },
+        { label: "Nguyên liệu & định lượng", href: `${base}/products/ingredients` },
+        { label: "Nhập / Xuất / Kiểm kho", href: `${base}/products/inventory` },
+        { label: "Nhà cung cấp", href: `${base}/FNB3/NhaCungCap` },
+        { label: "Quản lý lô / hạn sử dụng", href: `${base}/products/batches` },
       ],
     },
     {
@@ -63,10 +64,10 @@ function buildNav(base: string): NavGroup[] {
       label: "Khách hàng",
       Icon: Users,
       items: [
-        { label: "Danh sách khách hàng",      href: `${base}/customers/list` },
-        { label: "Nhóm KH & thẻ thành viên",  href: `${base}/customers/groups` },
-        { label: "Tích điểm & voucher",        href: `${base}/customers/loyalty` },
-        { label: "Khuyến mãi & marketing",    href: `${base}/customers/marketing` },
+        { label: "Danh sách khách hàng", href: `${base}/customers/list` },
+        { label: "Nhóm KH & thẻ thành viên", href: `${base}/customers/groups` },
+        { label: "Tích điểm & voucher", href: `${base}/customers/loyalty` },
+        { label: "Khuyến mãi & marketing", href: `${base}/customers/marketing` },
       ],
     },
     {
@@ -74,10 +75,10 @@ function buildNav(base: string): NavGroup[] {
       label: "Nhân viên",
       Icon: UserCheck,
       items: [
-        { label: "Danh sách nhân viên",       href: `${base}/staff/list` },
-        { label: "Chấm công & phân ca",       href: `${base}/staff/attendance` },
-        { label: "Tính lương & hoa hồng",     href: `${base}/staff/payroll` },
-        { label: "Phân quyền",                href: `${base}/staff/permissions` },
+        { label: "Danh sách nhân viên", href: `${base}/staff/list` },
+        { label: "Chấm công & phân ca", href: `${base}/staff/attendance` },
+        { label: "Tính lương & hoa hồng", href: `${base}/staff/payroll` },
+        { label: "Phân quyền", href: `${base}/staff/permissions` },
       ],
     },
     {
@@ -85,9 +86,9 @@ function buildNav(base: string): NavGroup[] {
       label: "Sổ quỹ",
       Icon: Wallet,
       items: [
-        { label: "Phiếu thu / phiếu chi",          href: `${base}/cashbook/vouchers` },
-        { label: "Sổ quỹ & đối soát kết tiền",     href: `${base}/cashbook/reconcile` },
-        { label: "Hóa đơn điện tử",                href: `${base}/cashbook/einvoice` },
+        { label: "Phiếu thu / phiếu chi", href: `${base}/cashbook/vouchers` },
+        { label: "Sổ quỹ & đối soát kết tiền", href: `${base}/cashbook/reconcile` },
+        { label: "Hóa đơn điện tử", href: `${base}/cashbook/einvoice` },
       ],
     },
     {
@@ -95,11 +96,11 @@ function buildNav(base: string): NavGroup[] {
       label: "Báo cáo",
       Icon: BarChart2,
       items: [
-        { label: "Báo cáo doanh thu",       href: `${base}/reports/revenue` },
-        { label: "Báo cáo lợi nhuận",       href: `${base}/reports/profit` },
+        { label: "Báo cáo doanh thu", href: `${base}/reports/revenue` },
+        { label: "Báo cáo lợi nhuận", href: `${base}/reports/profit` },
         { label: "Báo cáo kho & nguyên liệu", href: `${base}/reports/inventory` },
-        { label: "Báo cáo nhân viên",       href: `${base}/reports/staff` },
-        { label: "Báo cáo khách hàng",      href: `${base}/reports/customers` },
+        { label: "Báo cáo nhân viên", href: `${base}/reports/staff` },
+        { label: "Báo cáo khách hàng", href: `${base}/reports/customers` },
       ],
     },
   ];
@@ -116,7 +117,7 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
   const [storeName, setStoreName] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const base = `/store/${storeId}/fnb3`;
+  const base = `/CuaHang/${storeId}`;
   const navGroups = useMemo(() => buildNav(base), [base]);
 
   // Auto-expand the group that owns the current route
@@ -144,10 +145,9 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
   }, [activeGroupKey]);
 
   useEffect(() => {
-    apiGet<StoreInfo[]>("/store/my-stores").then((res) => {
-      if (res.success) {
-        const found = res.data.find((s) => s.id === storeId);
-        if (found) setStoreName(found.name);
+    storeService.getStoreDataAPI(storeId).then(result => {
+      if (result.success) {
+        setStoreName(result.data.name);
       }
     });
   }, [storeId]);
@@ -159,9 +159,14 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
 
   function toggleGroup(key: string) {
     setOpenGroups((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
+      // Nếu group đang mở, đóng nó
+      if (prev.has(key)) {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      }
+      // Nếu chưa mở, đóng tất cả, rồi mở group này
+      return new Set([key]);
     });
   }
 
@@ -173,7 +178,7 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
       {/* Store info */}
       <div className="px-4 py-5 border-b border-gray-100">
         <Link
-          href="/store"
+          href="/CuaHang"
           className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 mb-4 transition-colors"
         >
           <ArrowLeft size={13} />
@@ -206,11 +211,10 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
                   <Link
                     href={base}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                      groupActive
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${groupActive
+                      ? "bg-gray-900 text-white"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      }`}
                   >
                     <Icon size={16} />
                     {label}
@@ -224,13 +228,12 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
                 {/* Group header */}
                 <button
                   onClick={() => toggleGroup(key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
-                    groupActive && !isOpen
-                      ? "bg-gray-900 text-white"
-                      : groupActive
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${groupActive && !isOpen
+                    ? "bg-gray-900 text-white"
+                    : groupActive
                       ? "text-gray-900 bg-gray-50 font-medium"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <Icon size={16} className="shrink-0" />
                   <span className="flex-1 text-left">{label}</span>
@@ -242,9 +245,8 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
 
                 {/* Sub-items */}
                 <div
-                  className={`overflow-hidden transition-all duration-200 ${
-                    isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  className={`overflow-hidden transition-all duration-200 ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    }`}
                 >
                   <ul className="mt-0.5 ml-3 pl-3 border-l border-gray-100 space-y-0.5 pb-1">
                     {items.map((sub) => {
@@ -254,11 +256,10 @@ export default function Fnb3Layout({ children }: { children: React.ReactNode }) 
                           <Link
                             href={sub.href}
                             onClick={() => setSidebarOpen(false)}
-                            className={`block px-3 py-2 rounded-lg text-[13px] transition-colors leading-snug ${
-                              subActive
-                                ? "bg-gray-900 text-white"
-                                : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                            }`}
+                            className={`block px-3 py-2 rounded-lg text-[13px] transition-colors leading-snug ${subActive
+                              ? "bg-gray-900 text-white"
+                              : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                              }`}
                           >
                             {sub.label}
                           </Link>

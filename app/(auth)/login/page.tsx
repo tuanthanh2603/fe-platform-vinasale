@@ -16,7 +16,7 @@ export default function LoginPage() {
   const { isAuthenticated, login } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) router.replace("/store");
+    if (isAuthenticated) router.replace("/CuaHang");
   }, [isAuthenticated, router]);
 
   const onFinish = async (values: DTO_RQ_Login) => {
@@ -32,7 +32,7 @@ export default function LoginPage() {
         });
   
         toastSuccess("Đăng nhập thành công.");
-        router.push("/store");
+        router.push("/CuaHang");
       } else {
         toastError(res.message || "Đăng nhập thất bại.");
       }

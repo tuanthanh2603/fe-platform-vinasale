@@ -5,7 +5,7 @@ import { Package, ScanLine, Users, Tag, BarChart2, Settings } from "lucide-react
 import type { NavProps } from "@/components/store/store-shell";
 
 export default function CosmeticNav({ storeId, pathname, onNavigate }: NavProps) {
-  const base = `/store/${storeId}/cosmetic`;
+  const base = `/CuaHang/${storeId}/cosmetic`;
   const items = [
     { href: `${base}/products`,   label: "Sản phẩm",   icon: Package },
     { href: `${base}/pos`,        label: "Bán hàng",   icon: ScanLine },

@@ -1,7 +1,8 @@
-import { apiDelete, apiPost } from "@/lib/api-client";
+import { apiDelete, apiGet, apiPost } from "@/lib/api-client";
 import {
   CreateStoreRequest,
   CreateStoreResponse,
+  StoreData,
 } from "@/types/common/store/store.interface";
 
 export const storeService = {
@@ -12,4 +13,7 @@ export const storeService = {
   deleteStore(storeId: string) {
     return apiDelete<null>(`/store/delete-store/${storeId}`);
   },
+  getStoreDataAPI(storeId: string) {
+    return apiGet<StoreData>(`/store/${storeId}/data`);
+  }
 };
