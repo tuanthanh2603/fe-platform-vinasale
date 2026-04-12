@@ -14,8 +14,8 @@ export function useAccount() {
 			setIsLoading(true);
 			setError(null);
 			const result = await accountService.createAccount(request);
-			setData(result);
-			return result;
+			setData(result.data);
+			return result.data;
 		} catch (fetchError) {
 			const errorMessage = fetchError instanceof Error ? fetchError.message : "Tạo tài khoản thất bại";
 			setError(errorMessage);
