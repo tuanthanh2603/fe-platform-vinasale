@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-sf-pro-rounded), Arial, Helvetica, sans-serif;
 }
+.Toastify__toast {
+  font-family: var(--font-sf-pro-rounded) !important;
+}
+
+.Toastify__toast-body {
+  font-family: var(--font-sf-pro-rounded) !important;
+}
