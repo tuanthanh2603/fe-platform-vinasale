@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Form, Input, Button, Select } from "antd";
+import { Form, Input, Button, Select, message } from "antd";
 import {
   UserOutlined,
   ShopOutlined,
@@ -83,9 +83,9 @@ export default function RegisterPage() {
         setStoreName(res.data.storeName);  // BE trả: storeName
         setStep(2);
       } else if (res.code === 409) {
-        toastWarning("Tên cửa hàng của bạn đã tồn tại trên hệ thống.");
+        message.warning("Tên cửa hàng trên hệ thống đã tồn tại.");
       } else {
-        toastWarning("Tạo cửa hàng thất bại.");
+        message.error("Tạo cửa hàng thất bại.");
       }
     } catch (error) {
       console.error("handleCreateStore:", error);
@@ -119,13 +119,13 @@ export default function RegisterPage() {
         setResendCooldown(60);
         setStep(3);
       } else if (res.code === 409) {
-        toastWarning(res.message || "Dữ liệu đã tồn tại.");
+        message.warning("Email đã được sử dụng. Vui lòng dùng email khác.");
       } else {
-        toastError("Đăng ký thất bại.");
+        message.error("Đăng ký thất bại.");
       }
     } catch (error) {
       console.error("handleRegisterEmail:", error);
-      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+      message.error("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setRegisterLoading(false);
     }
@@ -135,7 +135,7 @@ export default function RegisterPage() {
 
   const handleVerifyOtp = async (values: { otp: string }) => {
     if (!accountId || !storeId) {
-      toastError("Thiếu thông tin xác thực.");
+      message.error("Thiếu thông tin xác thực.");
       return;
     }
 
@@ -154,13 +154,13 @@ export default function RegisterPage() {
         toastSuccess("Đăng ký thành công. Bạn có thể đăng nhập ngay.");
         router.push("/login");
       } else if (res.code === 422) {
-        toastWarning(res.message || "OTP không đúng hoặc đã hết hạn.");
+        message.warning("OTP không hợp lệ hoặc đã hết hạn.");
       } else {
-        toastWarning("Xác thực thất bại.");
+        message.error("Xác thực OTP thất bại.");
       }
     } catch (error) {
       console.error("handleVerifyOtp:", error);
-      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+      message.error("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setVerifyLoading(false);
     }
@@ -177,14 +177,14 @@ export default function RegisterPage() {
       const res = await authService.resendOtp({ email, accountId });
 
       if (res.success) {
-        toastSuccess("OTP mới đã được gửi tới email.");
+        message.success("OTP mới đã được gửi tới email.");
         setResendCooldown(60);
       } else {
-        toastWarning("Gửi lại OTP thất bại.");
+        message.warning("Gửi lại OTP thất bại.");
       }
     } catch (error) {
       console.error("handleResendOtp:", error);
-      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+      message.error("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setResendLoading(false);
     }
@@ -210,11 +210,11 @@ export default function RegisterPage() {
         setEmail("");
         setStep(1);
       } else {
-        toastWarning("Không thể quay lại. Vui lòng thử lại.");
+        message.warning("Không thể quay lại. Vui lòng thử lại.");
       }
     } catch (error) {
       console.error("goToStep1:", error);
-      toastError("Lỗi hệ thống. Vui lòng thử lại sau.");
+      message.error("Lỗi hệ thống. Vui lòng thử lại sau.");
     } finally {
       setCreateStoreLoading(false);
     }

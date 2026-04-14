@@ -1,13 +1,25 @@
 import { apiDelete, apiGet, apiPost, apiPut } from "@/lib/api-client";
 
 export interface Supplier {
-	id: string;
+	id: number;
+	code: string;
 	name: string;
 	contact: string;
 	phone: string;
 	email: string;
+	groupId?: number;
 	group: string;
-	status: "active" | "inactive";
+	status: "ACTIVE" | "INACTIVE";
+}
+
+export interface SupplierPayload {
+	code: string;
+	name: string;
+	contact: string;
+	phone: string;
+	email: string;
+	groupId: number;
+	status: "ACTIVE" | "INACTIVE";
 }
 
 export interface SupplierGroup {
@@ -56,7 +68,7 @@ function normalizeSupplierGroups(payload: unknown): SupplierGroup[] {
 }
 
 export const supplierService = {
-	async fetchSuppliers(storeId: string) {
+	async fetchSuppliersAPI(storeId: string) {
 		const response = await apiGet<Supplier[]>(`/fnb3/supplier/${storeId}/suppliers`);
 		if (!response.success) {
 			throw new Error(response.message || "Không thể tải danh sách nhà cung cấp.");
@@ -64,7 +76,7 @@ export const supplierService = {
 		return response.data ?? [];
 	},
 
-	async fetchGroups(storeId: string) {
+	async fetchGroupsAPI(storeId: string) {
 		const response = await apiGet<unknown>(`/fnb3/supplier/${storeId}/suppliers/groups`);
 		if (!response.success) {
 			throw new Error(response.message || "Không thể tải danh sách nhóm hàng.");
@@ -72,14 +84,14 @@ export const supplierService = {
 		return normalizeSupplierGroups(response.data);
 	},
 
-	async createSupplier(storeId: string, payload: Supplier) {
+	async createSupplierAPI(storeId: string, payload: SupplierPayload) {
 		const response = await apiPost<null>(`/fnb3/supplier/${storeId}/suppliers`, payload);
 		if (!response.success) {
 			throw new Error(response.message || "Không thể thêm nhà cung cấp.");
 		}
 	},
 
-	async updateSupplier(storeId: string, id: string, payload: Supplier) {
+	async updateSupplierAPI(storeId: string, id: number, payload: SupplierPayload) {
 		const response = await apiPut<null>(
 			`/fnb3/supplier/${storeId}/suppliers/${encodeURIComponent(id)}`,
 			payload
@@ -89,7 +101,7 @@ export const supplierService = {
 		}
 	},
 
-	async deleteSupplier(storeId: string, id: string) {
+	async deleteSupplierAPI(storeId: string, id: number) {
 		const response = await apiDelete<null>(
 			`/fnb3/supplier/${storeId}/suppliers/${encodeURIComponent(id)}`
 		);
@@ -98,7 +110,7 @@ export const supplierService = {
 		}
 	},
 
-	async createGroup(storeId: string, name: string) {
+	async createGroupAPI(storeId: string, name: string) {
 		const response = await apiPost<null>(`/fnb3/supplier/${storeId}/suppliers/groups`, {
 			name,
 		});
@@ -107,9 +119,9 @@ export const supplierService = {
 		}
 	},
 
-	async updateGroup(storeId: string, oldName: string, newName: string) {
+	async updateGroupAPI(storeId: string, newName: string, groupId: number) {
 		const response = await apiPut<null>(
-			`/fnb3/supplier/${storeId}/suppliers/groups/${encodeURIComponent(oldName)}`,
+			`/fnb3/supplier/${storeId}/suppliers/groups/${groupId}`,
 			{
 				name: newName,
 			}
@@ -119,7 +131,7 @@ export const supplierService = {
 		}
 	},
 
-	async deleteGroup(storeId: string, groupId: number) {
+	async deleteGroupAPI(storeId: string, groupId: number) {
 		const response = await apiDelete<null>(
 			`/fnb3/supplier/${storeId}/suppliers/groups/${groupId}`
 		);

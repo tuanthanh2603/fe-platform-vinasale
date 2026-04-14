@@ -7,6 +7,7 @@ import {
 	supplierService,
 	type Supplier,
 	type SupplierGroup,
+	type SupplierPayload,
 } from "@/lib/services/FNB/FNB3/supplier.service";
 import {
 	Building2,
@@ -24,12 +25,12 @@ import {
 } from "lucide-react";
 
 interface SupplierFormValues {
-	id: string;
+	code: string;
 	name: string;
 	contact: string;
 	phone: string;
 	email: string;
-	group: string;
+	groupId: number;
 	status: boolean;
 }
 
@@ -39,6 +40,12 @@ interface GroupWithCount {
 	count: number;
 }
 
+interface SyncSupplierDataOptions {
+	fetchSuppliers?: boolean;
+	fetchGroups?: boolean;
+	showError?: boolean;
+}
+
 export default function FNB3NhaCungCapPage() {
 	const { storeId } = useParams<{ storeId: string }>();
 	const [form] = Form.useForm<SupplierFormValues>();
@@ -46,36 +53,61 @@ export default function FNB3NhaCungCapPage() {
 	const [keyword, setKeyword] = useState("");
 	const [suppliers, setSuppliers] = useState<Supplier[]>([]);
 	const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
-	const [editingSupplierId, setEditingSupplierId] = useState<string | null>(null);
+	const [editingSupplierId, setEditingSupplierId] = useState<number | null>(null);
 
 	const [groups, setGroups] = useState<SupplierGroup[]>([]);
 	const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
 	const [groupKeyword, setGroupKeyword] = useState("");
 	const [groupInput, setGroupInput] = useState("");
-	const [editingGroup, setEditingGroup] = useState<string | null>(null);
+	const [editingGroupId, setEditingGroupId] = useState<number | null>(null);
 	const [isSyncing, setIsSyncing] = useState(false);
 
 	const isEditing = Boolean(editingSupplierId);
-	const isEditingGroup = Boolean(editingGroup);
+	const isEditingGroup = editingGroupId !== null;
+
+	function normalizeText(value: string | null | undefined) {
+		return typeof value === "string" ? value.trim().toLowerCase() : "";
+	}
+
+	function resolveSupplierGroupName(supplier: Supplier) {
+		if (typeof supplier.group === "string" && supplier.group.trim()) {
+			return supplier.group;
+		}
+		if (typeof supplier.groupId === "number") {
+			return groups.find((group) => group.id === supplier.groupId)?.name ?? "";
+		}
+		return "";
+	}
+
+	function resolveSupplierGroupId(supplier: Supplier) {
+		if (typeof supplier.groupId === "number") {
+			return supplier.groupId;
+		}
+		const matchedGroupByName = groups.find(
+			(group) => normalizeText(group.name) === normalizeText(supplier.group)
+		);
+		return matchedGroupByName?.id ?? groups[0]?.id;
+	}
 
 	const filteredSuppliers = useMemo(() => {
 		const q = keyword.trim().toLowerCase();
 		if (!q) return suppliers;
 
 		return suppliers.filter((supplier) => {
+			const supplierGroupName = resolveSupplierGroupName(supplier).toLowerCase();
 			return (
-				supplier.id.toLowerCase().includes(q) ||
+				supplier.code.toLowerCase().includes(q) ||
 				supplier.name.toLowerCase().includes(q) ||
 				supplier.contact.toLowerCase().includes(q) ||
 				supplier.phone.toLowerCase().includes(q) ||
 				supplier.email.toLowerCase().includes(q) ||
-				supplier.group.toLowerCase().includes(q)
+				supplierGroupName.includes(q)
 			);
 		});
-	}, [keyword, suppliers]);
+	}, [keyword, suppliers, groups]);
 
 	const totalSuppliers = suppliers.length;
-	const activeSuppliers = suppliers.filter((s) => s.status === "active").length;
+	const activeSuppliers = suppliers.filter((s) => s.status === "ACTIVE").length;
 	const inactiveSuppliers = totalSuppliers - activeSuppliers;
 	const filteredGroups = useMemo(() => {
 		const q = groupKeyword.trim().toLowerCase();
@@ -90,23 +122,39 @@ export default function FNB3NhaCungCapPage() {
 				count:
 					typeof group.supplierCount === "number"
 						? group.supplierCount
-						: suppliers.filter((supplier) => supplier.group === group.name).length,
+						: suppliers.filter(
+								(supplier) =>
+									normalizeText(resolveSupplierGroupName(supplier)) === normalizeText(group.name)
+						  ).length,
 			})),
-		[filteredGroups, suppliers]
+		[filteredGroups, suppliers, groups]
 	);
 
-	async function syncSupplierData(showError = false) {
+	async function syncSupplierData(options: SyncSupplierDataOptions = {}) {
 		if (!storeId) return;
+
+		const {
+			fetchSuppliers = true,
+			fetchGroups = true,
+			showError = false,
+		} = options;
+
+		if (!fetchSuppliers && !fetchGroups) return;
+
 		setIsSyncing(true);
 		try {
 			const [supplierResult, groupResult] = await Promise.allSettled([
-				supplierService.fetchSuppliers(storeId),
-				supplierService.fetchGroups(storeId),
+				fetchSuppliers
+					? supplierService.fetchSuppliersAPI(storeId)
+					: Promise.resolve<Supplier[] | null>(null),
+				fetchGroups
+					? supplierService.fetchGroupsAPI(storeId)
+					: Promise.resolve<SupplierGroup[] | null>(null),
 			]);
 
-			if (supplierResult.status === "fulfilled") {
+			if (fetchSuppliers && supplierResult.status === "fulfilled" && supplierResult.value) {
 				setSuppliers(supplierResult.value);
-			} else if (showError) {
+			} else if (fetchSuppliers && showError && supplierResult.status === "rejected") {
 				message.error(
 					supplierResult.reason instanceof Error
 						? supplierResult.reason.message
@@ -114,9 +162,9 @@ export default function FNB3NhaCungCapPage() {
 				);
 			}
 
-			if (groupResult.status === "fulfilled") {
+			if (fetchGroups && groupResult.status === "fulfilled" && groupResult.value) {
 				setGroups(groupResult.value);
-			} else if (showError) {
+			} else if (fetchGroups && showError && groupResult.status === "rejected") {
 				message.error(
 					groupResult.reason instanceof Error
 						? groupResult.reason.message
@@ -126,8 +174,8 @@ export default function FNB3NhaCungCapPage() {
 
 			if (
 				showError &&
-				supplierResult.status === "rejected" &&
-				groupResult.status === "rejected"
+				((fetchSuppliers && supplierResult.status === "rejected") ||
+					(fetchGroups && groupResult.status === "rejected"))
 			) {
 				message.error("Không thể đồng bộ dữ liệu từ hệ thống.");
 			}
@@ -137,7 +185,7 @@ export default function FNB3NhaCungCapPage() {
 	}
 
 	useEffect(() => {
-		void syncSupplierData();
+		void syncSupplierData({ fetchSuppliers: true, fetchGroups: true });
 	}, [storeId]);
 
 	function resetSupplierFormState() {
@@ -153,69 +201,77 @@ export default function FNB3NhaCungCapPage() {
 	function openCreateModal() {
 		setEditingSupplierId(null);
 		form.setFieldsValue({
-			id: "",
+			code: "",
 			name: "",
 			contact: "",
 			phone: "",
 			email: "",
-			group: groups[0]?.name || "",
+			groupId: groups[0]?.id,
 			status: true,
 		});
 		setIsSupplierModalOpen(true);
 	}
 
 	function openEditModal(supplier: Supplier) {
+		const resolvedGroupId = resolveSupplierGroupId(supplier);
+
 		setEditingSupplierId(supplier.id);
 		form.setFieldsValue({
-			id: supplier.id,
+			code: supplier.code,
 			name: supplier.name,
 			contact: supplier.contact,
 			phone: supplier.phone,
 			email: supplier.email,
-			group: supplier.group,
-			status: supplier.status === "active",
+			groupId: resolvedGroupId,
+			status: supplier.status === "ACTIVE",
 		});
 		setIsSupplierModalOpen(true);
 	}
 
 	function openGroupModal() {
 		setIsGroupModalOpen(true);
-		void syncSupplierData(true);
+		if (groups.length === 0) {
+			void syncSupplierData({ fetchGroups: true, fetchSuppliers: false, showError: true });
+		}
 	}
 
 	function closeGroupModal() {
 		setIsGroupModalOpen(false);
 		setGroupKeyword("");
 		setGroupInput("");
-		setEditingGroup(null);
+		setEditingGroupId(null);
 	}
 
 	function startCreateGroup() {
-		setEditingGroup(null);
+		setEditingGroupId(null);
 		setGroupInput("");
 	}
 
-	function startEditGroup(group: string) {
-		setEditingGroup(group);
-		setGroupInput(group);
+	function startEditGroup(group: GroupWithCount) {
+		setEditingGroupId(group.id);
+		setGroupInput(group.name);
 	}
 
 	async function saveGroup() {
 		const normalized = groupInput.trim();
+		if (!normalized) {
+			message.warning("Vui lòng nhập tên nhóm hàng.");
+			return;
+		}
 
 		try {
-			if (editingGroup) {
-				await supplierService.updateGroup(storeId, editingGroup, normalized);
+			if (editingGroupId !== null) {
+				await supplierService.updateGroupAPI(storeId, normalized, editingGroupId);
 				message.success("Cập nhật nhóm hàng thành công");
 			} else {
-				await supplierService.createGroup(storeId, normalized);
+				await supplierService.createGroupAPI(storeId, normalized);
 				message.success("Thêm nhóm hàng thành công");
 			}
 
-			await syncSupplierData(true);
+			await syncSupplierData({ fetchSuppliers: true, fetchGroups: true, showError: true });
 
 			setGroupInput("");
-			setEditingGroup(null);
+			setEditingGroupId(null);
 		} catch (error) {
 			message.error(error instanceof Error ? error.message : "Không thể lưu nhóm hàng.");
 		}
@@ -230,10 +286,14 @@ export default function FNB3NhaCungCapPage() {
 			okButtonProps: { danger: true },
 			onOk: async () => {
 				try {
-					await supplierService.deleteGroup(storeId, groupId);
-					await syncSupplierData(true);
-					if (editingGroup === groupName) {
-						setEditingGroup(null);
+					await supplierService.deleteGroupAPI(storeId, groupId);
+					await syncSupplierData({
+						fetchSuppliers: true,
+						fetchGroups: true,
+						showError: true,
+					});
+					if (editingGroupId === groupId) {
+						setEditingGroupId(null);
 						setGroupInput("");
 					}
 					message.success("Xóa nhóm hàng thành công");
@@ -249,14 +309,18 @@ export default function FNB3NhaCungCapPage() {
 	function deleteSupplier(supplier: Supplier) {
 		Modal.confirm({
 			title: "Xóa nhà cung cấp",
-			content: `Bạn có chắc muốn xóa ${supplier.name} (${supplier.id})?`,
+			content: `Bạn có chắc muốn xóa ${supplier.name} (${supplier.code})?`,
 			okText: "Xóa",
 			cancelText: "Hủy",
 			okButtonProps: { danger: true },
 			onOk: async () => {
 				try {
-					await supplierService.deleteSupplier(storeId, supplier.id);
-					await syncSupplierData(true);
+					await supplierService.deleteSupplierAPI(storeId, supplier.id);
+					await syncSupplierData({
+						fetchSuppliers: true,
+						fetchGroups: false,
+						showError: true,
+					});
 					message.success("Xóa nhà cung cấp thành công");
 
 					if (editingSupplierId === supplier.id) {
@@ -274,23 +338,27 @@ export default function FNB3NhaCungCapPage() {
 	async function handleSubmit() {
 		try {
 			const values = await form.validateFields();
-			const nextSupplier: Supplier = {
-				id: values.id.trim(),
+			const nextSupplier: SupplierPayload = {
+				code: values.code.trim(),
 				name: values.name.trim(),
 				contact: values.contact.trim(),
 				phone: values.phone.trim(),
 				email: values.email.trim(),
-				group: values.group,
-				status: values.status ? "active" : "inactive",
+				groupId: values.groupId,
+				status: values.status ? "ACTIVE" : "INACTIVE",
 			};
 
 			if (editingSupplierId) {
-				await supplierService.updateSupplier(storeId, editingSupplierId, nextSupplier);
+				await supplierService.updateSupplierAPI(storeId, editingSupplierId, nextSupplier);
 			} else {
-				await supplierService.createSupplier(storeId, nextSupplier);
+				await supplierService.createSupplierAPI(storeId, nextSupplier);
 			}
 
-			await syncSupplierData(true);
+			await syncSupplierData({
+				fetchSuppliers: true,
+				fetchGroups: false,
+				showError: true,
+			});
 
 			message.success(
 				editingSupplierId
@@ -412,7 +480,7 @@ export default function FNB3NhaCungCapPage() {
 										key={supplier.id}
 										className="border-b border-gray-100 last:border-0 hover:bg-gray-50/60"
 									>
-										<td className="px-4 py-3 font-medium text-gray-900">{supplier.id}</td>
+										<td className="px-4 py-3 font-medium text-gray-900">{supplier.code}</td>
 										<td className="px-4 py-3">
 											<p className="font-medium text-gray-900">{supplier.name}</p>
 											<p className="text-xs text-gray-500 mt-0.5">{supplier.email}</p>
@@ -433,16 +501,18 @@ export default function FNB3NhaCungCapPage() {
 												</span>
 											</div>
 										</td>
-										<td className="px-4 py-3 text-gray-700">{supplier.group}</td>
+										<td className="px-4 py-3 text-gray-700">
+											{resolveSupplierGroupName(supplier) || "-"}
+										</td>
 										<td className="px-4 py-3">
 											<span
 												className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
-													supplier.status === "active"
+													supplier.status === "ACTIVE"
 														? "bg-emerald-50 text-emerald-700"
 														: "bg-rose-50 text-rose-700"
 												}`}
 											>
-												{supplier.status === "active" ? "Đang hợp tác" : "Tạm ngưng"}
+												{supplier.status === "ACTIVE" ? "Đang hợp tác" : "Tạm ngưng"}
 											</span>
 										</td>
 										<td className="px-4 py-3">
@@ -485,7 +555,7 @@ export default function FNB3NhaCungCapPage() {
 			>
 				<Form form={form} layout="vertical" requiredMark={false}>
 					<Form.Item
-						name="id"
+						name="code"
 						label="Mã nhà cung cấp"
 						rules={[
 							{ required: true, message: "Vui lòng nhập mã nhà cung cấp" },
@@ -534,13 +604,13 @@ export default function FNB3NhaCungCapPage() {
 					</Form.Item>
 
 					<Form.Item
-						name="group"
+						name="groupId"
 						label="Nhóm hàng"
 						rules={[{ required: true, message: "Vui lòng chọn nhóm hàng" }]}
 					>
 						<Select
 							placeholder="Chọn nhóm hàng"
-							options={groups.map((group) => ({ label: group.name, value: group.name }))}
+							options={groups.map((group) => ({ label: group.name, value: group.id }))}
 						/>
 					</Form.Item>
 
@@ -617,7 +687,7 @@ export default function FNB3NhaCungCapPage() {
 														<Button
 															size="small"
 															icon={<Edit3 size={14} />}
-															onClick={() => startEditGroup(groupItem.name)}
+															onClick={() => startEditGroup(groupItem)}
 														>
 															Sửa
 														</Button>
