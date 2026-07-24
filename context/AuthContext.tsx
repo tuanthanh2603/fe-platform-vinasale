@@ -4,7 +4,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { clearAccessToken, setAccessToken } from "@/lib/auth/token-store";
 import { scheduleRefresh, stopScheduler } from "@/lib/auth/token-refresh-scheduler";
-import { toastError, toastSuccess, toastWarning } from "@/lib/utils/toast";
+import { toastError, toastWarning } from "@/lib/utils/toast";
+import { message } from "antd";
 import { authService } from "@/lib/services/common/auth/auth.service";
 
 interface AuthUser {
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("auth");
         clearAccessToken();
         stopScheduler();
-        toastSuccess("Đăng xuất thành công!");
+        message.success("Đăng xuất thành công!");
       } else {
         toastWarning("Đăng xuất thất bại, vui lòng thử lại!");
       }

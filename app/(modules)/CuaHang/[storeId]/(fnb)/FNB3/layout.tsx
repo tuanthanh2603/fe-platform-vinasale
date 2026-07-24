@@ -52,11 +52,11 @@ function buildNav(base: string): NavGroup[] {
       label: "Hàng hóa",
       Icon: Package,
       items: [
-        { label: "Danh mục menu (món, topping, combo)", href: `${base}/products/menu` },
-        { label: "Nguyên liệu & định lượng", href: `${base}/products/ingredients` },
-        { label: "Nhập / Xuất / Kiểm kho", href: `${base}/products/inventory` },
+        { label: "Danh mục menu (món, topping, combo)", href: `${base}/FNB3/DanhMuc` },
+        { label: "Nguyên liệu & định lượng", href: `${base}/FNB3/NguyenLieu` },
+        { label: "Nhập / Xuất / Kiểm kho", href: `${base}/FNB3/Kho` },
         { label: "Nhà cung cấp", href: `${base}/FNB3/NhaCungCap` },
-        { label: "Quản lý lô / hạn sử dụng", href: `${base}/products/batches` },
+        { label: "Quản lý lô / hạn sử dụng", href: `${base}/FNB3/Lo` },
       ],
     },
     {

@@ -6,7 +6,7 @@ import { Form, Input, Button, message } from "antd";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { DTO_RQ_Login } from "@/types/common/auth/login.interface";
 import { authService } from "@/lib/services/common/auth/auth.service";
-import { toastError, toastSuccess } from "@/lib/utils/toast";
+import { toastError } from "@/lib/utils/toast";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
@@ -31,7 +31,7 @@ export default function LoginPage() {
           refreshToken: res.data.refreshToken,
         });
   
-        toastSuccess("Đăng nhập thành công.");
+        message.success("Đăng nhập thành công.");
         router.push("/CuaHang");
       } else {
         toastError(res.message || "Đăng nhập thất bại.");

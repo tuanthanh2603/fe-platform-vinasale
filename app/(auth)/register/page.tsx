@@ -18,7 +18,7 @@ import { BUSINESS_SECTOR_OPTIONS } from "@/constants/common/auth/register.consta
 
 import { storeService } from "@/lib/services/common/store/store.service";
 import { authService } from "@/lib/services/common/auth/auth.service";
-import { toastError, toastSuccess, toastWarning } from "@/lib/utils/toast";
+import { toastError, toastWarning } from "@/lib/utils/toast";
 import { RegisterStep1Form, RegisterStep2Form } from "@/types/common/auth/auth.interface";
 
 export default function RegisterPage() {
@@ -78,7 +78,7 @@ export default function RegisterPage() {
       const res = await storeService.createStore(request);
 
       if (res.success) {
-        toastSuccess("Tạo cửa hàng thành công.");
+        message.success("Tạo cửa hàng thành công.");
         setStoreId(res.data.storeId);     // BE trả: storeId
         setStoreName(res.data.storeName);  // BE trả: storeName
         setStep(2);
@@ -113,10 +113,10 @@ export default function RegisterPage() {
       });
 
       if (res.success) {
-        toastSuccess("OTP đã được gửi tới email.");
+        message.success("OTP đã được gửi tới email.");
         setAccountId(res.data.accountId);  // BE trả: accountId
         setEmail(res.data.email);          // BE trả: email
-        setResendCooldown(60);
+        setResendCooldown(300);
         setStep(3);
       } else if (res.code === 409) {
         message.warning("Email đã được sử dụng. Vui lòng dùng email khác.");
@@ -151,7 +151,7 @@ export default function RegisterPage() {
 
       if (res.success) {
         registerCompletedRef.current = true;
-        toastSuccess("Đăng ký thành công. Bạn có thể đăng nhập ngay.");
+        message.success("Đăng ký thành công. Bạn có thể đăng nhập ngay.");
         router.push("/login");
       } else if (res.code === 422) {
         message.warning("OTP không hợp lệ hoặc đã hết hạn.");
@@ -178,7 +178,7 @@ export default function RegisterPage() {
 
       if (res.success) {
         message.success("OTP mới đã được gửi tới email.");
-        setResendCooldown(60);
+        setResendCooldown(300);
       } else {
         message.warning("Gửi lại OTP thất bại.");
       }
